@@ -2,6 +2,10 @@ import numpy as np
 from random import randint
 import random
 import sys
+from PyQt5.QtWidgets import QWidget, QApplication
+from PyQt5.QtGui import QPainter, QBrush, QColor
+from PyQt5.QtCore import Qt, QPoint, QTimer
+from xml.dom import minidom, Node
 
 
 class MAP:
@@ -22,6 +26,10 @@ class MAP:
     graveCPU2 = 10
     graveCPU3 = 11
     bombAndPlayer = 12
+    CPU1grave = 13
+    CPU2grave = 14
+    CPU3grave = 15
+    blast = 16
     playerSign = 'P'
     CPU1Sign = 'c'
     CPU2Sign = 'A'
@@ -37,11 +45,11 @@ class MAP:
         self.shape = (self.gridSize, self.gridSize)
         self.currentMap = np.ones(self.shape)
 
-    def generateMap(self,player, AI1, AI2, AI3):
-        print(self.gridSize)
+    def generateMap(self, player, AI1, AI2, AI3):
+        # print(self.gridSize)
         for i in range(1, self.gridSize):
             for j in range(1, self.gridSize):
-                if (i % 2 == 0) and j % 4 == 0:#generujemy siatke murów
+                if (i % 2 == 0) and j % 4 == 0:  # generujemy siatke murów
                     self.currentMap[i, j] = self.solidWall
                 else:
                     currentCell = randint(4, 6)  # 2/3 szans na bloczek ktory mozna zniszczyc
@@ -56,36 +64,35 @@ class MAP:
             self.currentMap[i, 1] = self.solidWall
             self.currentMap[i, self.gridSize-1] = self.solidWall
 
-        #pusty lewy gorny rog
+        # pusty lewy gorny rog
         self.currentMap[2, 2] = self.empty
         self.currentMap[2, 3] = self.empty
         self.currentMap[3, 2] = self.empty
         self.currentMap[2, 4] = self.empty
         self.currentMap[4, 2] = self.empty
 
-        #pusty prawy gorny rog
+        # pusty prawy gorny rog
         self.currentMap[2, self.gridSize-2] = self.empty
         self.currentMap[2, self.gridSize-3] = self.empty
         self.currentMap[2, self.gridSize-4] = self.empty
         self.currentMap[3, self.gridSize-2] = self.empty
         self.currentMap[4, self.gridSize-2] = self.empty
 
-
-        #pusty lewy dolny rog
+        # pusty lewy dolny rog
         self.currentMap[self.gridSize-2, 2] = self.empty
         self.currentMap[self.gridSize-3, 2] = self.empty
         self.currentMap[self.gridSize-4, 2] = self.empty
         self.currentMap[self.gridSize-2, 3] = self.empty
         self.currentMap[self.gridSize-2, 4] = self.empty
 
-        #pusty prawy dolny rog
+        # pusty prawy dolny rog
         self.currentMap[self.gridSize-2, self.gridSize-2] = self.empty
         self.currentMap[self.gridSize-3, self.gridSize-2] = self.empty
         self.currentMap[self.gridSize-4, self.gridSize-2] = self.empty
         self.currentMap[self.gridSize-2, self.gridSize-3] = self.empty
         self.currentMap[self.gridSize-2, self.gridSize-4] = self.empty
 
-        #4 graczy w naroznikach
+        # 4 graczy w naroznikach
         self.currentMap[2, 2] = self.player
         player.playerPositionX = 2
         player.playerPositionY = 2
@@ -101,56 +108,7 @@ class MAP:
 
         return self.currentMap
 
-    def paintMap(self):
-        color = ['\x1b[6;30;42m', '\x1b[7;31;44m', '\x1b[0;30;43m','\x1b[3;35;40m']  # we pick one out of 4 colors in the console
-
-        for i in range(0, self.gridSize):
-            print("-", end='')
-        print("-")
-        for i in range(1, self.gridSize):
-            print("|", end='')
-            for j in range(1, self.gridSize):
-                if self.currentMap[i, j] == self.solidWall:
-                    print(self.solidWallSign, end='')
-                elif self.currentMap[i, j] == self.destructibleWall:
-                    print(self.destructibleWallSign, end='')
-                elif self.currentMap[i, j] == self.bomb:
-                    print(self.bombSign, end='')
-                elif self.currentMap[i, j] == self.empty:
-                    print(" ", end='')
-                elif self.currentMap[i, j] == self.player:
-                    print('\x1b[6;30;42m' + self.playerSign + '\x1b[0m', end='')
-                   # print(self.playerSign, end='')
-                elif self.currentMap[i, j] == self.CPU1:
-                    #print(self.CPU1Sign, end='')
-                    print('\x1b[7;31;44m' + self.playerSign + '\x1b[0m', end='')
-                elif self.currentMap[i, j] == self.CPU2:
-                    # print(self.CPU2Sign, end='')
-                    print('\x1b[0;30;43m' + self.playerSign + '\x1b[0m', end='')
-                elif self.currentMap[i, j] == self.CPU3:
-                    # print(self.CPU3Sign, end='')
-                    print('\x1b[3;35;40m' + self.playerSign + '\x1b[0m', end='')
-                elif self.currentMap[i, j] == self.bombAndPlayer:
-                    # print(self.CPU3Sign, end='')
-                    print('\x1b[6;30;42m' + self.bombAndPlayerSign + '\x1b[0m', end='')
-                elif self.currentMap[i, j] == self.grave:
-                    print(self.graveSign)
-            print("|")
-        for i in range(0, self.gridSize):
-            print("-", end='')
-        print("-")
-        print('\x1b[6;30;42m' + "Gracz " + '\x1b[0m')
-        print('\x1b[7;31;44m' + "CPU1" + '\x1b[0m')
-        print('\x1b[0;30;43m' + "CPU2" + '\x1b[0m')
-        print('\x1b[3;35;40m' + "CPU3" + '\x1b[0m')
-
-        # print('Gracz komputerowy 1' + str(self.CPU1Sign))
-        # print('Gracz komputerowy 2' + str(self.CPU2Sign))
-        # print('Gracz komputerowy 3' + str(self.CPU2Sign))
-
     def sterowanie(self, command, currentPlayer, acMap, bomba):  # przekazanie acMap jest do dupy
-        # print("Przed sterowaniem X: " + str(currentPlayer.playerPositionX))
-        # print("Przed sterowaniem Y: " + str(currentPlayer.playerPositionY))
         if command == 'w':
             if self.currentMap[currentPlayer.playerPositionX-1, currentPlayer.playerPositionY] == self.empty:
                 self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY] = self.empty
@@ -158,12 +116,9 @@ class MAP:
                 self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY] = currentPlayer.id
         elif command == 's':
             if self.currentMap[currentPlayer.playerPositionX+1, currentPlayer.playerPositionY] == self.empty:
-               ##print("Płytka na którą wchodzimy: " + str(self.currentMap[currentPlayer.playerPositionX+1, currentPlayer.playerPositionY]))
                 self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY] = self.empty
-               # print("Płytka na której jestesmy: " + str(self.currentMap[currentPlayer.playerPositionX+1, currentPlayer.playerPositionY]))
                 currentPlayer.playerPositionX += 1
                 self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY] = currentPlayer.id
-               # print("Nowa płytka z graczem: " + str(self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY]))
         elif command == 'd':
             if self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY+1] == self.empty:
                 self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY] = self.empty
@@ -179,13 +134,11 @@ class MAP:
             self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY] = self.bombAndPlayer
             bomba.bombPositionX = currentPlayer.playerPositionX
             bomba.bombPositionY = currentPlayer.playerPositionY
-            bomba.timer = 3
+            bomba.timer = 7
         elif command == 'p':
-            menuGlowne.end = 1  # brzydkie, do poprawy
-            menuGlowne.score(acMap, currentPlayer)
+            pass
         else:
             print("Schlecht")
-            #self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY] = self.player
         return self.currentMap
 
 
@@ -195,7 +148,6 @@ class PLAYER:
     playerPositionY = 10
     id = 0
     isCPU = 0
-    color = ['\x1b[6;30;42m', '\x1b[7;31;44m', '\x1b[0;30;43m', '\x1b[3;35;40m']  # we pick one out of 4 colors in the console
 
     def __init__(self, playerPositionX, playerPositionY, isCPU, id):
         self.playerPositionX = playerPositionX
@@ -203,24 +155,15 @@ class PLAYER:
         self.isCPU = isCPU
         self.id = id
 
-    def printPlayer(self, number):
-        print(self.playerPositionX)
-        print(self.playerPositionY)
-        print(self.id)
-        print(self.isCPU)
-        print(self.color[number])
-
-
 
 class BOMB:
-    # TODO bombs going off
     # TODO multiple bombs going off
     # TODO blast stops when destroys something
     # TODO player stops when destroyed
     bombPositionX = 5
     bombPositionY = 5
     power = 1  # how far can blast reach
-    timer = 3  # how many rounds before bomb goes off
+    timer = 5  # how many rounds before bomb goes off
     active = 0
     left = 1
     right = 1
@@ -234,118 +177,109 @@ class BOMB:
 
     # if blast destroys wall it is changed to empty space, if player it is changed into grave
     def detonate(self, board):
-        for i in range(self.bombPositionX-self.power, self.bombPositionX+self.power):
-            for j in range(self.bombPositionY-self.power, self.bombPositionY + self.power):
-                if board.currentMap[i, j] == board.destructibleWall:
-                    board.currentMap[i, j] = board.empty
-                elif board.currentMap[i, j] == board.Player:
-                    board.currentMap[i, j] = board.gravePlayer
-                elif board.currentMap[i, j] == board.CPU1:
-                    board.currentMap[i, j] = board.graveCPU1
-                elif board.currentMap[i, j] == board.CPU2:
-                    board.currentMap[i, j] = board.graveCPU2
-                elif board.currentMap[i, j] == board.CPU3:
-                    board.currentMap[i, j] = board.graveCPU3
-                elif board.currentMap[i, j] == board.bomb:
-                    board.currentMap[i, j] = board.empty
-                elif board.currentMap[i, j] == board.bombAndPlayer:
-                    board.currentMap[i, j] = board.empty
+        if board.currentMap[self.bombPositionX, self.bombPositionY] == board.bomb:
+            board.currentMap[self.bombPositionX, self.bombPositionY] = board.empty
+        elif board.currentMap[self.bombPositionX, self.bombPositionY] == board.player:
+            board.currentMap[self.bombPositionX, self.bombPositionY] = board.grave
+        elif board.currentMap[self.bombPositionX, self.bombPositionY] == board.bombAndPlayer:
+            board.currentMap[self.bombPositionX, self.bombPositionY] = board.grave
+        j = self.bombPositionY
+        i = self.bombPositionX-self.power
+        if self.left == 1:
+            if board.currentMap[i, j] == board.destructibleWall:
+                board.currentMap[i, j] = board.empty
+                self.left = 0
+            elif board.currentMap[i, j] == board.player:
+                board.currentMap[i, j] = board.grave
+                self.left = 0
+            elif board.currentMap[i, j] == board.CPU1:
+                board.currentMap[i, j] = board.graveCPU1
+                self.left = 0
+            elif board.currentMap[i, j] == board.CPU2:
+                board.currentMap[i, j] = board.graveCPU2
+                self.left = 0
+            elif board.currentMap[i, j] == board.CPU3:
+                board.currentMap[i, j] = board.graveCPU3
+                self.left = 0
+            elif board.currentMap[i, j] == board.bomb:
+                board.currentMap[i, j] = board.empty
+                self.left = 0
+            elif board.currentMap[i, j] == board.bombAndPlayer:
+                board.currentMap[i, j] = board.empty
+                self.left = 0
+        i = self.bombPositionX+self.power
+        j = self.bombPositionY
+        if self.right == 1:
+            if board.currentMap[i, j] == board.destructibleWall:
+                board.currentMap[i, j] = board.empty
+                self.right = 0
+            elif board.currentMap[i, j] == board.player:
+                board.currentMap[i, j] = board.grave
+                self.right = 0
+            elif board.currentMap[i, j] == board.CPU1:
+                board.currentMap[i, j] = board.graveCPU1
+                self.right = 0
+            elif board.currentMap[i, j] == board.CPU2:
+                board.currentMap[i, j] = board.graveCPU2
+                self.right = 0
+            elif board.currentMap[i, j] == board.CPU3:
+                board.currentMap[i, j] = board.graveCPU3
+                self.right = 0
+            elif board.currentMap[i, j] == board.bomb:
+                board.currentMap[i, j] = board.empty
+                self.right = 0
+            elif board.currentMap[i, j] == board.bombAndPlayer:
+                board.currentMap[i, j] = board.empty
+                self.right = 0
+        i = self.bombPositionX
+        j = self.bombPositionY + self.power
+        if self.up == 1:
+            if board.currentMap[i, j] == board.destructibleWall:
+                board.currentMap[i, j] = board.empty
+                self.up = 0
+            elif board.currentMap[i, j] == board.player:
+                board.currentMap[i, j] = board.grave
+                self.up = 0
+            elif board.currentMap[i, j] == board.CPU1:
+                board.currentMap[i, j] = board.graveCPU1
+                self.up = 0
+            elif board.currentMap[i, j] == board.CPU2:
+                board.currentMap[i, j] = board.graveCPU2
+                self.up = 0
+            elif board.currentMap[i, j] == board.CPU3:
+                board.currentMap[i, j] = board.graveCPU3
+                self.up = 0
+            elif board.currentMap[i, j] == board.bomb:
+                board.currentMap[i, j] = board.empty
+                self.up = 0
+            elif board.currentMap[i, j] == board.bombAndPlayer:
+                board.currentMap[i, j] = board.empty
+                self.up = 0
+        i = self.bombPositionX
+        j = self.bombPositionY - self.power
+        if self.down == 1:
+            if board.currentMap[i, j] == board.destructibleWall:
+                board.currentMap[i, j] = board.empty
+                self.down = 0
+            elif board.currentMap[i, j] == board.player:
+                board.currentMap[i, j] = board.grave
+                self.down = 0
+            elif board.currentMap[i, j] == board.CPU1:
+                board.currentMap[i, j] = board.graveCPU1
+                self.down = 0
+            elif board.currentMap[i, j] == board.CPU2:
+                board.currentMap[i, j] = board.graveCPU2
+                self.down = 0
+            elif board.currentMap[i, j] == board.CPU3:
+                board.currentMap[i, j] = board.graveCPU3
+                self.down = 0
+            elif board.currentMap[i, j] == board.bomb:
+                board.currentMap[i, j] = board.empty
+                self.down = 0
+            elif board.currentMap[i, j] == board.bombAndPlayer:
+                board.currentMap[i, j] = board.empty
+                self.down = 0
         self.active = 0
-
-
-# menu class - prompting options
-class MENU:
-    # TODO scoreboard
-    # TODO more options in menu
-    mapGenerated = 0  # has map been generated
-    end = 0  # if true ends current play and goes to score panel
-    points = 0  # points in given round
-
-    def __init__(self):
-        pass
-
-    def optionsMenu(self, actualMap, currentPlayer, AI1, AI2, AI3):
-        print("Co chcesz zmienić?")
-        print("1.Rozmiar planszy")
-        print("2.Losuj planszę")
-        print("3.Wczytaj planszę")
-        print("4.Kolor gracza")
-        print("5.Wczytaj grę")
-        print("6.Przejdź do menu głównego")
-        choice = input("Wybierz opcję:\n")
-        if choice == '1':
-            newSize = input("Podaj rozmiar planszy\n")
-            actualMap = MAP(int(newSize))
-            actualMap.generateMap(currentPlayer, AI1, AI2, AI3)
-            self.optionsMenu(actualMap, currentPlayer, AI1, AI2, AI3)
-        elif choice == '2':
-            actualMap.generateMap(currentPlayer, AI1, AI2, AI3)
-            self.mapGenerated = 1
-            self.optionsMenu(actualMap, currentPlayer,AI1,AI2,AI3)
-        elif choice == '3':
-            self.optionsMenu(actualMap, currentPlayer,AI1,AI2,AI3)
-        elif choice == '4':
-            self.optionsMenu(actualMap, currentPlayer,AI1,AI2,AI3)
-        elif choice == '5':
-            self.optionsMenu(actualMap, currentPlayer, AI1, AI2, AI3)
-        elif choice == '6':
-            self.mainMenu(actualMap, currentPlayer, AI1, AI2, AI3)
-        else:
-            print("Niepoprawna komenda")
-            self.optionsMenu(actualMap, currentPlayer,AI1,AI2,AI3)
-
-    def mainMenu(self, actualMap, currentPlayer, AI1, AI2, AI3):
-        losoweSterowanie = ['a', 'w', 's', 'd']
-        print("Witamy w super BOMBERMANIE!")
-        print("1.Graj")
-        print("2.Opcje")
-        print("3.Koniec")
-        choice = input("Wybierz opcję\n")
-        if choice == '1':
-            if self.mapGenerated == 0:
-                actualMap.generateMap(currentPlayer, AI1, AI2, AI3)
-            actualMap.paintMap()
-            bomba = BOMB(10, 12, 1)
-            while not self.end:
-                # sterowanie graczem
-                # asd = input("Wybierz opcję:\n")
-                asd = sys.stdin.read(1)
-                actualMap.currentMap = actualMap.sterowanie(str(asd), currentPlayer, actualMap, bomba)
-                # losowe sterowanie duszkami
-                asd = random.choice(losoweSterowanie)
-                actualMap.currentMap = actualMap.sterowanie(asd, AI1, actualMap)
-                asd = random.choice(losoweSterowanie)
-                actualMap.currentMap = actualMap.sterowanie(asd, AI2, actualMap)
-                asd = random.choice(losoweSterowanie)
-                actualMap.currentMap = actualMap.sterowanie(asd, AI3, actualMap)
-                if bomba.active == 1:
-                    bomba.timer -= 1
-                    if bomba.timer == 0:
-                        bomba.detonate(actualMap)
-
-
-
-
-                actualMap.paintMap()
-
-                # currentPlayer.printPlayer(0)
-                # AI1.printPlayer(1)
-                # AI2.printPlayer(2)
-                # AI3.printPlayer(3)
-        elif choice == '2':
-            self.optionsMenu(actualMap, currentPlayer, AI1, AI2, AI3)
-        elif choice == '3':
-            sys.exit()
-        else:
-            print("Niepoprawna komenda")
-            self.mainMenu(actualMap, currentPlayer,AI1,AI2,AI3)
-
-    def score(self, thisMap, thisPlayer):
-        print("Otrzymałeś "+str(self.points)+" punktów!")
-        self.end = 0
-        input("")
-        self.mainMenu(thisMap, thisPlayer, AI1, AI2, AI3)
-
 
 #  main program code
 gracz = PLAYER(0, 0, 2, 0)
@@ -354,6 +288,249 @@ AI2 = PLAYER(1, 2, 2, 2)
 AI3 = PLAYER(1, 3, 8, 3)
 
 mapa = MAP(40)
+mapa.generateMap(gracz, AI1, AI2, AI3)
 
-menuGlowne = MENU()
-menuGlowne.mainMenu(mapa, gracz, AI1, AI2, AI3)
+
+class Example(QWidget):
+    rectSize = 17
+    wallColor = QColor(200, 200, 20)
+    brickColor = QColor(150, 25, 14)
+    grassColor = QColor(0, 92, 9)
+    playerColor = QColor(238, 193, 189)
+    CPU1Color = QColor(100, 200, 240)
+    CPU2Color = QColor(150, 150, 140)
+    CPU3Color = QColor(200, 100, 40)
+    blastColor = QColor(255, 255, 255)
+    bombColor = QColor(0, 0, 0)
+
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setGeometry(100, 50, 750, 650)
+        self.setWindowTitle('Graficzny Bomberman')
+        self.show()
+
+    def rectBrush(self, qp, startPointX, startPointY, rectSize, pattern, color):
+        brush = QBrush(pattern)
+        brush.setColor(color)
+        qp.setBrush(brush)
+        qp.drawRect(startPointX, startPointY, rectSize, rectSize)
+
+    def graveBrush(self, qp, startPointX, startPointY, rectSize, currentColor):
+        brush = QBrush(Qt.SolidPattern)
+        brush.setColor(currentColor)
+        qp.setBrush(brush)
+        qp.drawRect(startPointX, startPointY, rectSize, rectSize)
+        brush.setColor(QColor(0, 0, 0))
+        qp.setBrush(brush)
+        qp.drawRect(startPointX+rectSize*0.4, startPointY, rectSize/5, rectSize)
+        qp.drawRect(startPointX, startPointY+rectSize*0.3, rectSize, rectSize/5)
+
+    # def keyPressEvent(self, e):
+    #     command = e.key()
+    #     # if e.key() == QtCore.Qt.Key_Up:
+    #     #         player.direction = 0
+    #     #         player.rect.setRect(player.rect.x(), player.rect.y() - 2, X_PSIZE, Y_PSIZE)
+    #     #     elif e.key() == QtCore.Qt.Key_Down:
+    #     #         player.rect.setRect(player.rect.x(), player.rect.y() + 2, X_PSIZE, Y_PSIZE)
+    #     #     elif e.key() == QtCore.Qt.Key_Left:
+    #     #         player.rect.setRect(player.rect.x() - 2, player.rect.y(), X_PSIZE, Y_PSIZE)
+    #     #     elif e.key() == QtCore.Qt.Key_Right:
+    #     #         player.rect.setRect(player.rect.x() + 2, player.rect.y(), X_PSIZE, Y_PSIZE)
+    #     #     elif e.key() == QtCore.Qt.Key_Space:
+    #     #         player.bombList.append(Bomb(int(player.rect.x() / 20), int(player.rect.y() / 20)))
+    #     #     print('test')
+    #     if command == QtCore.Qt.Key_Up:#'w':
+    #         if mapa.currentMap[gracz.playerPositionX-1, gracz.playerPositionY] == mapa.empty:
+    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
+    #             gracz.playerPositionX -= 1
+    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
+    #     elif command == 's':
+    #         if mapa.currentMap[gracz.playerPositionX+1, gracz.playerPositionY] == mapa.empty:
+    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
+    #             gracz.playerPositionX += 1
+    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
+    #     elif command == 'd':
+    #         if mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY+1] == mapa.empty:
+    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
+    #             gracz.playerPositionY += 1
+    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
+    #     elif command == 'a':
+    #         if mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY-1] == mapa.empty:
+    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
+    #             gracz.playerPositionY -= 1
+    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
+    #     elif command == ' ':
+    #         bomba.active = 1
+    #         mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.bombAndPlayer
+    #         bomba.bombPositionX = gracz.playerPositionX
+    #         bomba.bombPositionY = gracz.playerPositionY
+    #         bomba.timer = 7
+    #     elif command == 'p':
+    #         pass
+    #     else:
+    #         print("Schlecht")
+
+    def bombBrush(self, qp, startPointX, startPointY, rectSize, backColor):
+        brush = QBrush(Qt.SolidPattern)
+        brush.setColor(backColor)
+        qp.setBrush(brush)
+        qp.drawRect(startPointX, startPointY, rectSize, rectSize)
+        brush.setColor(self.bombColor)
+        qp.setBrush(brush)
+        center = QPoint(startPointX+rectSize/2, startPointY+rectSize/2)
+        qp.drawEllipse(center, rectSize/2 - 1, rectSize/2 - 1)
+
+    def paintEvent(self, e):
+        qp = QPainter()
+        qp.begin(self)
+        for i in range(1, 40):
+            for j in range(1, 40):
+                if mapa.currentMap[i, j] == mapa.solidWall:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.SolidPattern,
+                                   self.wallColor)
+                elif mapa.currentMap[i, j] == mapa.blast:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.SolidPattern,
+                                   self.blastColor)
+                elif mapa.currentMap[i, j] == mapa.destructibleWall:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.DiagCrossPattern,
+                                   self.brickColor)
+                elif mapa.currentMap[i, j] == mapa.empty:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.Dense1Pattern,
+                                   self.grassColor)
+                elif mapa.currentMap[i, j] == mapa.player:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.SolidPattern,
+                                   self.playerColor)
+                elif mapa.currentMap[i, j] == mapa.CPU1:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.SolidPattern,
+                                   self.CPU1Color)
+                elif mapa.currentMap[i, j] == mapa.CPU2:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.SolidPattern,
+                                   self.CPU2Color)
+                elif mapa.currentMap[i, j] == mapa.CPU3:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.SolidPattern,
+                                   self.CPU3Color)
+                elif mapa.currentMap[i, j] == mapa.grave:
+                    self.graveBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, self.playerColor)
+                elif mapa.currentMap[i, j] == mapa.CPU1grave:
+                    self.graveBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, self.CPU1Color)
+                elif mapa.currentMap[i, j] == mapa.CPU2grave:
+                    self.graveBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, self.CPU2Color)
+                elif mapa.currentMap[i, j] == mapa.CPU3grave:
+                    self.graveBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, self.CPU3Color)
+                elif mapa.currentMap[i, j] == mapa.bomb:
+                    self.bombBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, self.grassColor)
+                elif mapa.currentMap[i, j] == mapa.bombAndPlayer:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.SolidPattern,
+                                   self.playerColor)
+                    self.bombBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, self.playerColor)
+                else:
+                    self.rectBrush(qp, 10+i*self.rectSize, 10+j*self.rectSize, self.rectSize, Qt.SolidPattern,
+                                   self.wallColor)
+
+        # tutaj robimy legendę - bloczki
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+15, 10, Qt.SolidPattern, self.wallColor)
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+30, 10, Qt.SolidPattern, self.blastColor)
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+45, 10, Qt.DiagCrossPattern, self.brickColor)
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+60, 10, Qt.Dense1Pattern, self.grassColor)
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+75, 10, Qt.SolidPattern, self.playerColor)
+        self.graveBrush(qp, self.rectSize * 40 + 20, self.rectSize+90, 10, self.playerColor)
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+105, 10, Qt.SolidPattern, self.playerColor)
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+120, 10, Qt.SolidPattern, self.CPU1Color)
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+135, 10, Qt.SolidPattern, self.CPU2Color)
+        self.rectBrush(qp, self.rectSize * 40 + 20, self.rectSize+150, 10, Qt.SolidPattern, self.CPU3Color)
+        self.bombBrush(qp, self.rectSize * 40 + 20, self.rectSize+165, 10, self.grassColor)
+        self.bombBrush(qp, self.rectSize * 40 + 20, self.rectSize+180, 10, self.playerColor)
+
+        # tutaj robimy legendę - podpisy
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+25, "Niezniszczalna ściana")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+40, "Wybuch")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+55, "Cegły")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+70, "Puste miejsce")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+85, "Gracz")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+100, "Grób gracza")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+115, "Kolor gracza numer 1")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+130, "Kolor gracza numer 2")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+145, "Kolor gracza numer 3")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+160, "Kolor gracza numer 4")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+175, "Bomba")
+        qp.drawText(self.rectSize * 40 + 40, self.rectSize+190, "Bomba i gracz")
+
+        qp.end()
+
+
+def save(movPlayer, movCPU1, movCPU2, movCPU3):
+    doc = minidom.Document()
+
+    doc.appendChild(doc.createComment("Replay Bomberman"))
+
+    book = doc.createElement('players')
+    doc.appendChild(book)
+
+    humanPlayer = doc.createElement('Czlowiek')
+    book.appendChild(humanPlayer)
+    movements = doc.createElement('movements')
+    humanPlayer.appendChild(movements)
+    movements.appendChild(doc.createTextNode(''.join(movPlayer)))
+
+    CPU1Player = doc.createElement('CPU1')
+    book.appendChild(CPU1Player)
+    movements = doc.createElement('movements')
+    CPU1Player.appendChild(movements)
+    movements.appendChild(doc.createTextNode(''.join(movCPU1)))
+
+    CPU2Player = doc.createElement('CPU2')
+    book.appendChild(CPU2Player)
+    movements = doc.createElement('movements')
+    CPU2Player.appendChild(movements)
+    movements.appendChild(doc.createTextNode(''.join(movCPU2)))
+
+    CPU3Player = doc.createElement('CPU3')
+    book.appendChild(CPU3Player)
+    movements = doc.createElement('movements')
+    CPU3Player.appendChild(movements)
+    movements.appendChild(doc.createTextNode(''.join(movCPU3)))
+
+    print(doc.toprettyxml(indent='   '))
+
+    file_handle = open("filename.xml", "w")
+    doc.writexml(file_handle)
+    file_handle.close()
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Example()
+    losoweSterowanie = ['a', 'w', 's', 'd']
+    bomba = BOMB(10, 12, 1)
+    # losowe sterowanie duszkami
+    playerMovements = []
+    CPU1Movements = []
+    CPU2Movements = []
+    CPU3Movements = []
+
+
+    def tick():
+        asd = random.choice(losoweSterowanie)
+        mapa.currentMap = mapa.sterowanie(asd, AI1, mapa, bomba)
+        CPU1Movements.append(asd)
+        asd = random.choice(losoweSterowanie)
+        mapa.currentMap = mapa.sterowanie(asd, AI2, mapa, bomba)
+        CPU2Movements.append(asd)
+        asd = random.choice(losoweSterowanie)
+        mapa.currentMap = mapa.sterowanie(asd, AI3, mapa, bomba)
+        CPU3Movements.append(asd)
+        ex.repaint()
+        print(CPU1Movements)
+        print(CPU2Movements)
+        print(CPU3Movements)
+        save(playerMovements, CPU1Movements, CPU2Movements, CPU3Movements)
+
+
+    timer = QTimer()
+    timer.timeout.connect(tick)
+    timer.start(1000)
+
+    sys.exit(app.exec_())
