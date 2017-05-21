@@ -5,11 +5,12 @@ import sys
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtCore import Qt, QPoint, QTimer
-from xml.dom import minidom, Node
+from xml.dom import minidom
 
 
 class MAP:
     # TODO generowanie mapy DFS
+    # TODO generowanie inna metoda
     gridSize = 40
     shape = (gridSize, gridSize)
     currentMap = np.ones(shape)
@@ -109,6 +110,7 @@ class MAP:
         return self.currentMap
 
     def sterowanie(self, command, currentPlayer, acMap, bomba):  # przekazanie acMap jest do dupy
+        # TODO poprawic kierunki
         if command == 'w':
             if self.currentMap[currentPlayer.playerPositionX-1, currentPlayer.playerPositionY] == self.empty:
                 self.currentMap[currentPlayer.playerPositionX, currentPlayer.playerPositionY] = self.empty
@@ -143,7 +145,7 @@ class MAP:
 
 
 class PLAYER:
-    # TODO randomowe sterowanie innymi graczami
+    # TODO AI
     playerPositionX = 5
     playerPositionY = 10
     id = 0
@@ -308,7 +310,7 @@ class Example(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(100, 50, 750, 650)
+        self.setGeometry(100, 20, 850, 750)
         self.setWindowTitle('Graficzny Bomberman')
         self.show()
 
@@ -328,50 +330,54 @@ class Example(QWidget):
         qp.drawRect(startPointX+rectSize*0.4, startPointY, rectSize/5, rectSize)
         qp.drawRect(startPointX, startPointY+rectSize*0.3, rectSize, rectSize/5)
 
-    # def keyPressEvent(self, e):
-    #     command = e.key()
-    #     # if e.key() == QtCore.Qt.Key_Up:
-    #     #         player.direction = 0
-    #     #         player.rect.setRect(player.rect.x(), player.rect.y() - 2, X_PSIZE, Y_PSIZE)
-    #     #     elif e.key() == QtCore.Qt.Key_Down:
-    #     #         player.rect.setRect(player.rect.x(), player.rect.y() + 2, X_PSIZE, Y_PSIZE)
-    #     #     elif e.key() == QtCore.Qt.Key_Left:
-    #     #         player.rect.setRect(player.rect.x() - 2, player.rect.y(), X_PSIZE, Y_PSIZE)
-    #     #     elif e.key() == QtCore.Qt.Key_Right:
-    #     #         player.rect.setRect(player.rect.x() + 2, player.rect.y(), X_PSIZE, Y_PSIZE)
-    #     #     elif e.key() == QtCore.Qt.Key_Space:
-    #     #         player.bombList.append(Bomb(int(player.rect.x() / 20), int(player.rect.y() / 20)))
-    #     #     print('test')
-    #     if command == QtCore.Qt.Key_Up:#'w':
-    #         if mapa.currentMap[gracz.playerPositionX-1, gracz.playerPositionY] == mapa.empty:
-    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
-    #             gracz.playerPositionX -= 1
-    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
-    #     elif command == 's':
-    #         if mapa.currentMap[gracz.playerPositionX+1, gracz.playerPositionY] == mapa.empty:
-    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
-    #             gracz.playerPositionX += 1
-    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
-    #     elif command == 'd':
-    #         if mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY+1] == mapa.empty:
-    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
-    #             gracz.playerPositionY += 1
-    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
-    #     elif command == 'a':
-    #         if mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY-1] == mapa.empty:
-    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
-    #             gracz.playerPositionY -= 1
-    #             mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
-    #     elif command == ' ':
-    #         bomba.active = 1
-    #         mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.bombAndPlayer
-    #         bomba.bombPositionX = gracz.playerPositionX
-    #         bomba.bombPositionY = gracz.playerPositionY
-    #         bomba.timer = 7
-    #     elif command == 'p':
-    #         pass
-    #     else:
-    #         print("Schlecht")
+    def keyPressEvent(self, e):
+        command = e.key()
+        if command == Qt.Key_Left or command == Qt.Key_A:
+            playerMovements.append(str(chr(command+32)))
+            if mapa.currentMap[gracz.playerPositionX-1, gracz.playerPositionY] == mapa.empty:
+                mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
+                gracz.playerPositionX -= 1
+                mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
+        elif command == Qt.Key_Right or command == Qt.Key_D:
+            playerMovements.append(str(chr(command+32)))
+            if mapa.currentMap[gracz.playerPositionX+1, gracz.playerPositionY] == mapa.empty:
+                mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
+                gracz.playerPositionX += 1
+                mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
+        elif command == Qt.Key_Down or command == Qt.Key_S:
+            playerMovements.append(str(chr(command+32)))
+            if mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY+1] == mapa.empty:
+                mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
+                gracz.playerPositionY += 1
+                mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
+        elif command == Qt.Key_Up or command == Qt.Key_W:
+            playerMovements.append(str(chr(command+32)))
+            if mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY-1] == mapa.empty:
+                mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.empty
+                gracz.playerPositionY -= 1
+                mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = gracz.id
+        elif command == Qt.Key_Space:
+            playerMovements.append(str(chr(command)))
+            bomba.active = 1
+            mapa.currentMap[gracz.playerPositionX, gracz.playerPositionY] = mapa.bombAndPlayer
+            bomba.bombPositionX = gracz.playerPositionX
+            bomba.bombPositionY = gracz.playerPositionY
+            bomba.timer = 7
+        elif command == Qt.Key_Z:
+            saveMovements(playerMovements, CPU1Movements, CPU2Movements, CPU3Movements)
+        elif command == Qt.Key_L:
+            load()
+            timer.stop()
+        elif command == Qt.Key_R:
+            global replay
+            replay = not replay
+        elif command == Qt.Key_P:
+            if timer.isActive():
+                timer.stop()
+            else:
+                timer.start(timertime)
+        else:
+            print("Schlecht")
 
     def bombBrush(self, qp, startPointX, startPointY, rectSize, backColor):
         brush = QBrush(Qt.SolidPattern)
@@ -461,13 +467,22 @@ class Example(QWidget):
         qp.end()
 
 
-def save(movPlayer, movCPU1, movCPU2, movCPU3):
+def saveMovements(movPlayer, movCPU1, movCPU2, movCPU3):
     doc = minidom.Document()
 
     doc.appendChild(doc.createComment("Replay Bomberman"))
 
     book = doc.createElement('players')
     doc.appendChild(book)
+
+    print(movPlayer)
+    print(movCPU1)
+    print(movCPU2)
+    print(movCPU3)
+
+    if len(movPlayer) != len(movCPU1):
+        # wypielnia stringa do dlugosci movCPU1 zerami
+        movPlayer = movPlayer + ['n'] * (len(movCPU1) - len(movPlayer))
 
     humanPlayer = doc.createElement('Czlowiek')
     book.appendChild(humanPlayer)
@@ -493,14 +508,28 @@ def save(movPlayer, movCPU1, movCPU2, movCPU3):
     CPU3Player.appendChild(movements)
     movements.appendChild(doc.createTextNode(''.join(movCPU3)))
 
-    print(doc.toprettyxml(indent='   '))
-
-    file_handle = open("filename.xml", "w")
+    file_handle = open("saveFile.xml", "w")
     doc.writexml(file_handle)
     file_handle.close()
 
 
+def load():
+        xmldoc = minidom.parse('saveFile.xml')
+        itemlist = xmldoc.getElementsByTagName('movements')
+        for s in itemlist:
+            print(s.childNodes[0].nodeValue)
+        global playerMovements, CPU1Movements, CPU2Movements, CPU3Movements
+        playerMovements = list(itemlist[0].childNodes[0].nodeValue)
+        CPU1Movements = list(itemlist[1].childNodes[0].nodeValue)
+        CPU2Movements = list(itemlist[2].childNodes[0].nodeValue)
+        CPU3Movements = list(itemlist[3].childNodes[0].nodeValue)
+        print(playerMovements)
+
+
 if __name__ == '__main__':
+    timertime = 100
+    replay = 0
+    replayround = 0
     app = QApplication(sys.argv)
     ex = Example()
     losoweSterowanie = ['a', 'w', 's', 'd']
@@ -513,24 +542,35 @@ if __name__ == '__main__':
 
 
     def tick():
-        asd = random.choice(losoweSterowanie)
-        mapa.currentMap = mapa.sterowanie(asd, AI1, mapa, bomba)
-        CPU1Movements.append(asd)
-        asd = random.choice(losoweSterowanie)
-        mapa.currentMap = mapa.sterowanie(asd, AI2, mapa, bomba)
-        CPU2Movements.append(asd)
-        asd = random.choice(losoweSterowanie)
-        mapa.currentMap = mapa.sterowanie(asd, AI3, mapa, bomba)
-        CPU3Movements.append(asd)
+        global replay
+        if replay == 0:
+            asd = random.choice(losoweSterowanie)
+            mapa.currentMap = mapa.sterowanie(asd, AI1, mapa, bomba)
+            CPU1Movements.append(asd)
+            asd = random.choice(losoweSterowanie)
+            mapa.currentMap = mapa.sterowanie(asd, AI2, mapa, bomba)
+            CPU2Movements.append(asd)
+            asd = random.choice(losoweSterowanie)
+            mapa.currentMap = mapa.sterowanie(asd, AI3, mapa, bomba)
+            CPU3Movements.append(asd)
+        else:
+            global replayround
+            mapa.currentMap = mapa.sterowanie(playerMovements[replayround], AI1, mapa, bomba)
+            mapa.currentMap = mapa.sterowanie(CPU1Movements[replayround], AI1, mapa, bomba)
+            mapa.currentMap = mapa.sterowanie(CPU2Movements[replayround], AI2, mapa, bomba)
+            mapa.currentMap = mapa.sterowanie(CPU3Movements[replayround], AI3, mapa, bomba)
+            if replayround < len(CPU1Movements)-1:
+                print("rr: "+str(replayround)+" dlugosc: "+str(len(CPU1Movements)))
+                replayround += 1
+            else:
+                replay = not replay
+                replayround = 0
+                print("Koncze replay")
         ex.repaint()
-        print(CPU1Movements)
-        print(CPU2Movements)
-        print(CPU3Movements)
-        save(playerMovements, CPU1Movements, CPU2Movements, CPU3Movements)
 
 
     timer = QTimer()
     timer.timeout.connect(tick)
-    timer.start(1000)
+    timer.start(timertime)
 
     sys.exit(app.exec_())
