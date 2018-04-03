@@ -1,0 +1,31 @@
+{
+  "language_code": "pl",
+  "author": "wz",
+  "main_menu": {
+    "start": "Start",
+    "load": "Wczytaj gre",
+    "settings": "Ustawienia",
+    "exit": "Wyjscie"
+  },
+  "game": {
+    "bomb": "Bomba",
+    "empty_space": "Puste miejsce",
+    "destructible_wall": "Mur do zniszczenia",
+    "wall": "Niezniszczalny mur",
+    "blast": "Wybuch",
+    "power_up": "Bonus",
+    "grave": "Grob",
+    "bot": "Bot",
+    "player": "Gracz"
+  },
+  "settings": {
+    "choose_language": "Wybierz język",
+    "choose_map_size": "Wybierz rozmiar mapy",
+    "load_map": "Wczytaj mapę",
+    "save_map": "Zapisz mapę",
+    "generate_map": "Generuj mapę",
+    "ip": "Adres ip",
+    "port": "Numer portu",
+    "connect_button": "Połącz"
+  }
+}

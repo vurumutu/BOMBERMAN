@@ -8,3 +8,7 @@ Bomberman game written in python3 numpy and pyQT5.
 * PEP8 improvements
 * Comments in english
 
+## Alfa - 0.25
+* Further refactoring
+* Language localization in json
+
