@@ -12,3 +12,6 @@ Bomberman game written in python3 numpy and pyQT5.
 * Further refactoring
 * Language localization in json
 
+## Alfa - 0.3
+* Drawing map and legend of any given size
+

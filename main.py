@@ -5,19 +5,19 @@ from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtCore import Qt, QPoint, QTimer
 import json
+from abc import ABC, abstractmethod
 
 qp = QPainter()
 
 
-class Block:
-    rect_size = 17
-
+class Block(ABC):
     def __init__(self, _name, _pattern, _caption, _color, _id):
         self.name = _name
         self.pattern = _pattern
         self.caption = _caption
         self.color = _color
         self.id = _id
+        self.rect_size = 17
 
     def change_caption(self, new_caption):
         self.caption = new_caption
@@ -31,11 +31,18 @@ class Block:
     def change_pattern(self, new_color):
         self.color = new_color
 
+    def draw_caption(self, start_point_x, start_point_y):
+        qp.drawText(start_point_x, start_point_y, self.caption)
+
+    @abstractmethod
     def draw_block(self, start_point_x, start_point_y):
-        raise NotImplementedError("Please Implement this method")
+        pass
 
 
 class OrdinaryBlock(Block):
+    def __init__(self, _name, _pattern, _caption, _color, _id):
+        super().__init__(_name, _pattern, _caption, _color, _id)
+
     def draw_block(self, start_point_x, start_point_y):
         brush = QBrush(self.pattern)
         brush.setColor(self.color)
@@ -44,6 +51,9 @@ class OrdinaryBlock(Block):
 
 
 class GraveBlock(Block):
+    def __init__(self, _name, _pattern, _caption, _color, _id):
+        super().__init__(_name, _pattern, _caption, _color, _id)
+
     def draw_block(self, start_point_x, start_point_y):
         brush = QBrush(Qt.SolidPattern)
         brush.setColor(self.color)
@@ -56,6 +66,9 @@ class GraveBlock(Block):
 
 
 class BombBlock(Block):
+    def __init__(self, _name, _pattern, _caption, _color, _id):
+        super().__init__(_name, _pattern, _caption, _color, _id)
+
     def draw_block(self, start_point_x, start_point_y):
         brush = QBrush(Qt.SolidPattern)
         brush.setColor(QColor(0, 92, 9))  # empty space color
@@ -69,29 +82,27 @@ class BombBlock(Block):
 
 class Board:
     block_dict = {
-        'player':               OrdinaryBlock("player", Qt.SolidPattern, "wall", QColor(238, 193, 189), 0),
-        'CPU1':                 OrdinaryBlock("CPU1", Qt.SolidPattern, "wall", QColor(100, 200, 240), 1),
-        'CPU2':                 OrdinaryBlock("CPU2", Qt.SolidPattern, "wall", QColor(150, 150, 140), 2),
-        'CPU3':                 OrdinaryBlock("CPU3", Qt.SolidPattern, "wall", QColor(200, 100, 40), 3),
-        'solidWall':            OrdinaryBlock("solidWall", Qt.SolidPattern, "wall", QColor(200, 200, 20), 4),
-        'destructibleWall':     OrdinaryBlock("destructibleWall", Qt.DiagCrossPattern, "wall", QColor(150, 25, 14), 5),
-        'empty':                OrdinaryBlock("empty", Qt.Dense1Pattern, "wall", QColor(0, 92, 9), 6),
-        'bomb':                 BombBlock("bomb", Qt.SolidPattern, "wall", QColor(0, 0, 0), 7),
-        'grave':                GraveBlock("grave", Qt.SolidPattern, "wall", QColor(238, 193, 189), 8),
-        'bombAndPlayer':        OrdinaryBlock("bombAndPlayer", Qt.SolidPattern, "wall", QColor(238, 193, 189), 9),
-        'blast':                OrdinaryBlock("blast", Qt.SolidPattern, "wall", QColor(255, 255, 255), 9)
+        'player':               OrdinaryBlock("player", Qt.SolidPattern, "player", QColor(238, 193, 189), 0),
+        'CPU1':                 OrdinaryBlock("CPU1", Qt.SolidPattern, "CPU1", QColor(100, 200, 240), 1),
+        'CPU2':                 OrdinaryBlock("CPU2", Qt.SolidPattern, "CPU2", QColor(150, 150, 140), 2),
+        'CPU3':                 OrdinaryBlock("CPU3", Qt.SolidPattern, "CPU3", QColor(200, 100, 40), 3),
+        'solidWall':            OrdinaryBlock("solidWall", Qt.SolidPattern, "solidWall", QColor(200, 200, 20), 4),
+        'destructibleWall':     OrdinaryBlock("destructibleWall", Qt.DiagCrossPattern, "destW", QColor(150, 25, 14), 5),
+        'empty':                OrdinaryBlock("empty", Qt.Dense1Pattern, "empty", QColor(0, 92, 9), 6),
+        'bomb':                 BombBlock("bomb", Qt.SolidPattern, "bomb", QColor(0, 0, 0), 7),
+        'grave':                GraveBlock("grave", Qt.SolidPattern, "grave", QColor(238, 193, 189), 8),
+        'bombAndPlayer':        OrdinaryBlock("bombAndPlayer", Qt.SolidPattern, "bombandp", QColor(238, 193, 189), 9),
+        'blast':                OrdinaryBlock("blast", Qt.SolidPattern, "blast", QColor(255, 255, 255), 9)
     }
 
-    def __init__(self, gridsize):
-        self.gridSize = gridsize
+    def __init__(self, _grid_size):
+        self.gridSize = _grid_size
         self.shape = (self.gridSize, self.gridSize)
         self.current_board = np.empty(self.shape, dtype=object)
 
     def generate_board(self):
         for i in range(1, self.gridSize):
             for j in range(1, self.gridSize):
-                # print(current_map)
-                print(i, " ", j)
                 if (i % 2 == 0) and j % 4 == 0:  # solid walls inside
                     self.current_board[i, j] = self.block_dict['solidWall']
                 else:
@@ -150,66 +161,45 @@ class MainWindow(QWidget):
         for i in range(1, self.board.gridSize):
             for j in range(1, self.board.gridSize):
                 if self.board.current_board[i, j] == self.board.block_dict['solidWall']:
-                    print(i, j)
-                    self.board.block_dict['solidWall'].draw(10, 10)
-                # elif mapa.currentMap[i, j] == mapa.blast:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.SolidPattern,
-                #                     self.blastColor)
-                # elif mapa.currentMap[i, j] == mapa.destructibleWall:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.DiagCrossPattern,
-                #                     self.brickColor)
-                # elif mapa.currentMap[i, j] == mapa.empty:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.Dense1Pattern,
-                #                     self.grassColor)
-                # elif mapa.currentMap[i, j] == mapa.player:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.SolidPattern,
-                #                     self.playerColor)
-                # elif mapa.currentMap[i, j] == mapa.CPU1:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.SolidPattern,
-                #                     self.CPU1Color)
-                # elif mapa.currentMap[i, j] == mapa.CPU2:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.SolidPattern,
-                #                     self.CPU2Color)
-                # elif mapa.currentMap[i, j] == mapa.CPU3:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.SolidPattern,
-                #                     self.CPU3Color)
-                # elif mapa.currentMap[i, j] == mapa.grave:
-                #     self.grave_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, self.playerColor)
-                # elif mapa.currentMap[i, j] == mapa.CPU1grave:
-                #     self.grave_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, self.CPU1Color)
-                # elif mapa.currentMap[i, j] == mapa.CPU2grave:
-                #     self.grave_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, self.CPU2Color)
-                # elif mapa.currentMap[i, j] == mapa.CPU3grave:
-                #     self.grave_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, self.CPU3Color)
-                # elif mapa.currentMap[i, j] == mapa.bomb:
-                #     self.bomb_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, self.grassColor)
-                # elif mapa.currentMap[i, j] == mapa.bombAndPlayer:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.SolidPattern,
-                #                     self.playerColor)
-                #     self.bomb_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, self.playerColor)
-                # else:
-                #     self.rect_brush(qp, 10+i*self.rect_size, 10+j*self.rect_size, self.rect_size, Qt.SolidPattern,
-                #                     self.wallColor)
+                    self.board.block_dict['solidWall'].draw_block(10 + i*self.board.block_dict['solidWall'].rect_size,
+                                                                  10 + j*self.board.block_dict['solidWall'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['blast']:
+                    self.board.block_dict['blast'].draw_block(10 + i*self.board.block_dict['blast'].rect_size,
+                                                                  10 + j*self.board.block_dict['blast'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['destructibleWall']:
+                    self.board.block_dict['destructibleWall'].draw_block(10 + i*self.board.block_dict['destructibleWall'].rect_size,
+                                                                  10 + j*self.board.block_dict['destructibleWall'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['grave']:
+                    self.board.block_dict['grave'].draw_block(10 + i*self.board.block_dict['grave'].rect_size,
+                                                              10 + j*self.board.block_dict['grave'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['bomb']:
+                    self.board.block_dict['bomb'].draw_block(10 + i*self.board.block_dict['bomb'].rect_size,
+                                                             10 + j*self.board.block_dict['bomb'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['empty']:
+                    self.board.block_dict['empty'].draw_block(10 + i*self.board.block_dict['empty'].rect_size,
+                                                              10 + j*self.board.block_dict['empty'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['player']:
+                    self.board.block_dict['player'].draw_block(10 + i*self.board.block_dict['player'].rect_size,
+                                                              10 + j*self.board.block_dict['player'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['CPU1']:
+                    self.board.block_dict['CPU1'].draw_block(10 + i*self.board.block_dict['CPU1'].rect_size,
+                                                             10 + j*self.board.block_dict['CPU1'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['CPU2']:
+                    self.board.block_dict['CPU2'].draw_block(10 + i*self.board.block_dict['CPU2'].rect_size,
+                                                             10 + j*self.board.block_dict['CPU2'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['CPU3']:
+                    self.board.block_dict['CPU3'].draw_block(10 + i*self.board.block_dict['CPU3'].rect_size,
+                                                             10 + j*self.board.block_dict['CPU3'].rect_size)
+                elif self.board.current_board[i, j] == self.board.block_dict['bombAndPlayer']:
+                    self.board.block_dict['bombAndPlayer'].draw_block(10 + i*self.board.block_dict['bombAndPlayer'].rect_size,
+                                                              10 + j*self.board.block_dict['bombAndPlayer'].rect_size)
 
-        # # legend - squares with symbols
-        # self.rect_brush(qp, self.rect_size * 40 + 20, self.rect_size+15, 10, Qt.SolidPattern, self.wallColor)
-        # self.rect_brush(qp, self.rect_size * 40 + 20, self.rect_size+30, 10, Qt.SolidPattern, self.blastColor)
-        # self.rect_brush(qp, self.rect_size * 40 + 20, self.rect_size+45, 10, Qt.DiagCrossPattern, self.brickColor)
-        # self.rect_brush(qp, self.rect_size * 40 + 20, self.rect_size+60, 10, Qt.Dense1Pattern, self.grassColor)
-        # self.rect_brush(qp, self.rect_size * 40 + 20, self.rect_size+75, 10, Qt.SolidPattern, self.playerColor)
-        # self.grave_brush(qp, self.rect_size * 40 + 20, self.rect_size+90, 10, self.playerColor)
-        # self.bomb_brush(qp, self.rect_size * 40 + 20, self.rect_size+105, 10, self.grassColor)
-        #
-        # # legend with captions
-        # legend_caption = language_data['game']
-        #
-        # qp.drawText(self.rect_size * 40 + 40, self.rect_size+25, legend_caption['wall'])
-        # qp.drawText(self.rect_size * 40 + 40, self.rect_size+40, legend_caption['blast'])
-        # qp.drawText(self.rect_size * 40 + 40, self.rect_size+55, legend_caption['destructible_wall'])
-        # qp.drawText(self.rect_size * 40 + 40, self.rect_size+70, legend_caption['empty_space'])
-        # qp.drawText(self.rect_size * 40 + 40, self.rect_size+85, legend_caption['player'])
-        # qp.drawText(self.rect_size * 40 + 40, self.rect_size+100, legend_caption['grave'])
-        # qp.drawText(self.rect_size * 40 + 40, self.rect_size+115, legend_caption['bomb'])
+        # legend
+        i = 20
+        for key, value in self.board.block_dict.items():
+            value.draw_block(value.rect_size*self.board.gridSize + 20, value.rect_size + i*2)
+            value.draw_caption(value.rect_size*self.board.gridSize + 40, value.rect_size + i*2 + 12)
+            i += 20
 
         qp.end()
 
