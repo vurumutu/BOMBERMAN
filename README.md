@@ -1,2 +1,10 @@
 # BOMBERMAN
-Bomberman game written in python and QT.
+Bomberman game written in python3 numpy and pyQT5.
+
+## Alfa - 0.2
+* Localizations files moved to folder
+* Removed replay function
+* Refactored map generating
+* PEP8 improvements
+* Comments in english
+

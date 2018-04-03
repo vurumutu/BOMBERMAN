@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language>
+	<info>
+		<lang>Polski</lang>
+		<image>pl.png</image>
+	</info>
+	<menus>
+		<main_menu>
+			<play>Graj</play>
+			<options>Opcje</options>
+			<exit>Wyjdź z programu</exit>
+		</main_menu>
+		<game>
+			<legend>
+				<wall>Ściana</wall>
+				<destructible_wall>Cegły</destructible_wall>
+				<empty_space>Puste miejsce</empty_space>
+				<power_up>Bonus</power_up>
+				<bomb>Bomba</bomb>
+				<blast>Wybuch</blast>
+				<player1>Gracz 1</player1>
+				<player2>Gracz 2</player2>
+				<player3>Gracz 3</player3>
+				<player4>Gracz 4</player4>
+				<CPU1>Gracz komputerowy 1</CPU1>
+				<CPU2>Gracz komputerowy 2</CPU2>
+				<CPU3>Gracz komputerowy 3</CPU3>
+				<CPU4>Gracz komputerowy 4</CPU4>
+				<grave>Grób</grave>
+			</legend>
+		</game>
+		<options>
+			<choose_language>Wybierz język</choose_language>
+			<choose_map_size>Wybierz rozmiar mapy</choose_map_size>
+			<load_map>Wczytaj mapę</load_map>
+			<save_map>Zapisz mapę</save_map>
+			<choose_colors>Zmień kolory i fakturę</choose_colors>
+			<generate_map>Generuj nową mapę</generate_map>
+			<manually_map>Stwórz mapę ręcznie</manually_map>
+			<manually_map_description>Stwórz mapę ręcznie</manually_map_description>
+		</options>
+		<connect>
+			<ip_address>Adres IP</ip_address>
+			<port>Port</port>
+			<connect_button>Połącz</connect_button>
+		</connect>
+	</menus>
+</language>
